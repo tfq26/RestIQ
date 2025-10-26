@@ -1,45 +1,72 @@
-import { PropsWithChildren, useState } from 'react';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import * as React from "react";
+import {
+  View,
+  TouchableOpacity,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+} from "react-native";
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+// Enable LayoutAnimation on Android
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
-export function Collapsible({ children, title }: PropsWithChildren & { title: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const theme = useColorScheme() ?? 'light';
+type CollapsibleProps = {
+  children: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  style?: any;
+};
+
+function Collapsible({ children, open = false, onOpenChange, style }: CollapsibleProps) {
+  const [expanded, setExpanded] = React.useState(open);
+
+  const toggle = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded((prev) => {
+      onOpenChange?.(!prev);
+      return !prev;
+    });
+  };
 
   return (
-    <ThemedView>
-      <TouchableOpacity
-        style={styles.heading}
-        onPress={() => setIsOpen((value) => !value)}
-        activeOpacity={0.8}>
-        <IconSymbol
-          name="chevron.right"
-          size={18}
-          weight="medium"
-          color={theme === 'light' ? Colors.light.icon : Colors.dark.icon}
-          style={{ transform: [{ rotate: isOpen ? '90deg' : '0deg' }] }}
-        />
+    <View style={style}>
+      {React.Children.map(children, (child: any) => {
+        if (!React.isValidElement(child)) return child;
 
-        <ThemedText type="defaultSemiBold">{title}</ThemedText>
-      </TouchableOpacity>
-      {isOpen && <ThemedView style={styles.content}>{children}</ThemedView>}
-    </ThemedView>
+        // Pass expanded state and toggle function to trigger/content
+        return React.cloneElement(child as React.ReactElement<any>, { expanded, toggle });
+      })}
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  heading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  content: {
-    marginTop: 6,
-    marginLeft: 24,
-  },
-});
+type CollapsibleTriggerProps = {
+  children: React.ReactNode;
+  expanded?: boolean;
+  toggle?: () => void;
+  style?: any;
+};
+
+function CollapsibleTrigger({ children, expanded, toggle, style }: CollapsibleTriggerProps) {
+  return (
+    <TouchableOpacity onPress={toggle} style={style}>
+      {children}
+    </TouchableOpacity>
+  );
+}
+
+type CollapsibleContentProps = {
+  children: React.ReactNode;
+  expanded?: boolean;
+  style?: any;
+};
+
+function CollapsibleContent({ children, expanded, style }: CollapsibleContentProps) {
+  if (!expanded) return null;
+
+  return <View style={style}>{children}</View>;
+}
+
+export { Collapsible, CollapsibleTrigger, CollapsibleContent };

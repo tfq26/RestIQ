@@ -7,6 +7,10 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
 
+import { View, Text } from 'react-native';
+import { Header } from '@/components/Header';
+import { MainSleepDisplay } from '@/components/MainSleepDisplay';
+
 export default function HomeScreen() {
   return (
     <ParallaxScrollView
@@ -17,6 +21,14 @@ export default function HomeScreen() {
           style={styles.reactLogo}
         />
       }>
+      
+      /* FIGMA INTEGRATION STUFF STARTS HERE */
+
+      <Header /> 
+      <MainSleepDisplay score={85} />
+
+      /*  FIGMA INTEGRATION ENDS HERE */
+
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
