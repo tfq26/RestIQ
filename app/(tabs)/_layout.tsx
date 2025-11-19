@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { useProtectedRoute } from '../auth/useProtectedRoute';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -7,6 +8,8 @@ import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
+  // Redirect users to the auth screens if they're not signed in
+  useProtectedRoute();
   const colorScheme = useColorScheme();
 
   return (

@@ -1,98 +1,150 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { StyleSheet, View, TouchableOpacity } from "react-native";
+import { Image } from "expo-image";
+import { Link, useRouter } from "expo-router";
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { useAuth } from "../../contexts/authContext";
+import { supabase } from "../../lib/supabase";
 
 export default function HomeScreen() {
+  const auth = useAuth();
+  const user = auth?.user ?? null;
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    // After signing out, navigate to the auth group (sign-in)
+    // Use expo-router's replace so the user can't go back to protected screens
+    router.replace('/auth');
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
+    <ThemedView style={styles.container}>
+      {/* HEADER IMAGE */}
+      <View style={styles.headerImageContainer}>
         <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+          source={require("@/assets/images/sleep-moon.jpg")} // replace with your own moon/sleep image
+          style={styles.headerImage}
+          contentFit="cover"
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
+      </View>
+
+      {/* TITLE */}
+      <ThemedText type="title" style={styles.title}>
+        👋 Welcome to RestIQ
+      </ThemedText>
+
+      <ThemedText type="subtitle" style={styles.subtitle}>
+        Your smart sleep companion
+      </ThemedText>
+
+      {/* USER SECTION */}
+      <ThemedText style={styles.userText}>
+        {user ? `Signed in as: ${user.email}` : "Loading user..."}
+      </ThemedText>
+
+      {/* NAVIGATION BUTTONS */}
+      <View style={styles.buttonsContainer}>
+        <Link href="/(app)/analyze" asChild>
+          <TouchableOpacity style={styles.button}>
+            <ThemedText style={styles.buttonText}>Start Sleep Analysis</ThemedText>
+          </TouchableOpacity>
         </Link>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <Link href="/(app)/history" asChild>
+          <TouchableOpacity style={styles.button}>
+            <ThemedText style={styles.buttonText}>Sleep History</ThemedText>
+          </TouchableOpacity>
+        </Link>
+
+        <Link href="/(app)/profile" asChild>
+          <TouchableOpacity style={styles.button}>
+            <ThemedText style={styles.buttonText}>Profile</ThemedText>
+          </TouchableOpacity>
+        </Link>
+
+        <Link href="/(app)/settings" asChild>
+          <TouchableOpacity style={styles.button}>
+            <ThemedText style={styles.buttonText}>Settings</ThemedText>
+          </TouchableOpacity>
+        </Link>
+      </View>
+
+      {/* SIGN OUT BUTTON */}
+      <TouchableOpacity onPress={handleSignOut} style={styles.signOut}>
+        <ThemedText style={styles.signOutText}>Sign Out</ThemedText>
+      </TouchableOpacity>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    padding: 24,
+    alignItems: "center",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  headerImageContainer: {
+    width: "100%",
+    height: 180,
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+
+  headerImage: {
+    width: "100%",
+    height: "100%",
+    opacity: 0.85,
+  },
+
+  title: {
+    fontSize: 32,
+    fontWeight: "bold",
+    marginBottom: 6,
+    textAlign: "center",
+  },
+
+  subtitle: {
+    fontSize: 18,
+    opacity: 0.6,
+    marginBottom: 20,
+  },
+
+  userText: {
+    fontSize: 14,
+    opacity: 0.7,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+
+  buttonsContainer: {
+    width: "100%",
+    gap: 12,
+    marginTop: 10,
+  },
+
+  button: {
+    backgroundColor: "#3A4460",
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+
+  signOut: {
+    marginTop: "auto",
+    padding: 12,
+  },
+
+  signOutText: {
+    color: "#ff5252",
+    fontWeight: "700",
   },
 });
