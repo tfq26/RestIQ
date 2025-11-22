@@ -2,17 +2,18 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native
 import { Slot, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
+import Toast from 'react-native-toast-message';
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AuthProvider } from "../contexts/authContext";
-import { useProtectedRoute } from "../app/auth/useProtectedRoute"
+import { useProtectedRoute } from "@/hooks/useProtectedRoute"
 
 export const unstable_settings = {
   anchor: "(tabs)",
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme() ?? 'light';
 
   // Strip noisy RN web warnings
   if (
@@ -29,7 +30,7 @@ export default function RootLayout() {
         ) {
           return;
         }
-      } catch {}
+      } catch { }
       originalWarn(...args);
     };
     (console as any)._pointerEventsFilterApplied = true;
@@ -38,6 +39,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <AuthNavigationGate colorScheme={colorScheme} />
+      <Toast />
     </AuthProvider>
   );
 }

@@ -1,9 +1,10 @@
 import { Stack } from "expo-router";
-import { useProtectedRoute } from "./useProtectedRoute";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 
 export default function AuthLayout() {
   // Redirect authenticated users OUT of auth routes
-  useProtectedRoute();
+  // Redirect authenticated users OUT of auth routes
+  // useProtectedRoute();
 
   return (
     <Stack

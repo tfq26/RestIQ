@@ -5,29 +5,33 @@ import { supabase } from "../lib/supabase";
 type AuthContextType = {
   user: User | null;
   setUser: Dispatch<SetStateAction<User | null>>;
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: any) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Check on mount
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
+      setLoading(false);
     });
 
     // Listen to changes (login/logout)
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      setLoading(false);
     });
 
     return () => listener.subscription.unsubscribe();
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

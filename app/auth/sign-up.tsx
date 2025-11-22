@@ -1,74 +1,258 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView
+} from "react-native";
 import { supabase } from "../../lib/supabase";
 import { Link, useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import { createURL } from "expo-linking";
+import Toast from 'react-native-toast-message';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function SignUpScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSignUp = async () => {
-    setError("");
+    setLoading(true);
 
     const { error } = await supabase.auth.signUp({
       email,
       password,
     });
 
-    if (error) setError(error.message);
-    else router.replace("/"); // Return to sign-in
+    if (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Sign Up Failed',
+        text2: error.message,
+      });
+      setLoading(false);
+    } else {
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Account created! Please sign in.',
+      });
+      router.replace("/");
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const redirectUrl = createURL('/auth/callback');
+      console.log('Google Sign-In Redirect URL:', redirectUrl);
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+        if (result.type === 'success' && result.url) {
+          const params = new URLSearchParams(result.url.split('#')[1]);
+          const access_token = params.get('access_token');
+          const refresh_token = params.get('refresh_token');
+
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({
+              access_token,
+              refresh_token,
+            });
+          }
+        }
+      }
+    } catch (err: any) {
+      Toast.show({
+        type: 'error',
+        text1: 'Google Sign In Error',
+        text2: err.message,
+      });
+    }
   };
 
   return (
-    <View style={{ flex: 1, padding: 24, justifyContent: "center" }}>
-      <Text style={{ fontSize: 32, fontWeight: "bold", marginBottom: 24 }}>
-        Create Account
-      </Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <View style={styles.box}>
+          <Text style={styles.title}>Create Account</Text>
+          <Text style={styles.subtitle}>Join RestIQ today</Text>
 
-      {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
+          <TextInput
+            placeholder="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            placeholderTextColor="#9BA9CE"
+            style={styles.input}
+            onChangeText={setEmail}
+            value={email}
+          />
 
-      <TextInput
-        placeholder="Email"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        style={{
-          padding: 12,
-          borderWidth: 1,
-          borderRadius: 8,
-          marginBottom: 12,
-        }}
-        onChangeText={setEmail}
-      />
+          <TextInput
+            placeholder="Password"
+            secureTextEntry
+            placeholderTextColor="#9BA9CE"
+            style={styles.input}
+            onChangeText={setPassword}
+            value={password}
+          />
 
-      <TextInput
-        placeholder="Password"
-        secureTextEntry
-        style={{
-          padding: 12,
-          borderWidth: 1,
-          borderRadius: 8,
-          marginBottom: 18,
-        }}
-        onChangeText={setPassword}
-      />
+          <TouchableOpacity
+            style={styles.button}
+            onPress={handleSignUp}
+            disabled={loading}
+          >
+            <Text style={styles.buttonText}>{loading ? "Creating..." : "Sign Up"}</Text>
+          </TouchableOpacity>
 
-      <TouchableOpacity
-        style={{
-          backgroundColor: "#10b981",
-          padding: 14,
-          borderRadius: 8,
-          alignItems: "center",
-        }}
-        onPress={handleSignUp}
-      >
-        <Text style={{ color: "white", fontWeight: "bold" }}>Sign Up</Text>
-      </TouchableOpacity>
+          <View style={styles.dividerContainer}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.divider} />
+          </View>
 
-      <Link href="/" style={{ marginTop: 20, textAlign: "center" }}>
-        Already have an account? Sign In
-      </Link>
-    </View>
+          <TouchableOpacity
+            style={[styles.button, styles.googleButton]}
+            onPress={handleGoogleSignIn}
+          >
+            <Text style={[styles.buttonText, styles.googleButtonText]}>Sign up with Google</Text>
+          </TouchableOpacity>
+
+          <View style={styles.footer}>
+            <Link href="/" style={styles.link}>
+              Already have an account? <Text style={styles.bold}>Sign In</Text>
+            </Link>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#0D1B2A",
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  box: {
+    width: "100%",
+    maxWidth: 400,
+    backgroundColor: "rgba(255,255,255,0.05)",
+    padding: 32,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#E0E6F5",
+    textAlign: "center",
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: "#9BA9CE",
+    textAlign: "center",
+    marginBottom: 32,
+  },
+  input: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.1)",
+    color: "white",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: "#3b82f6",
+    paddingVertical: 16,
+    borderRadius: 12,
+    marginTop: 8,
+    alignItems: "center",
+    shadowColor: "#3b82f6",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "700",
+    fontSize: 16,
+    letterSpacing: 0.5,
+  },
+  googleButton: {
+    backgroundColor: "white",
+    marginTop: 16,
+  },
+  googleButtonText: {
+    color: "#333",
+  },
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 24,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  dividerText: {
+    color: "#9BA9CE",
+    paddingHorizontal: 16,
+    fontSize: 14,
+  },
+  footer: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  link: {
+    color: "#9BA9CE",
+    fontSize: 14,
+  },
+  bold: {
+    fontWeight: "700",
+    color: "#3b82f6",
+  },
+});

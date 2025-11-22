@@ -1,6 +1,6 @@
-import { useRouter, useSegments } from "expo-router";
+import { useRouter, useSegments, useRootNavigationState } from "expo-router";
 import { useEffect } from "react";
-import { useAuth } from "../../contexts/authContext";
+import { useAuth } from "@/contexts/authContext";
 
 /**
  * Automatically redirects the user based on whether they are authenticated.
@@ -11,12 +11,16 @@ import { useAuth } from "../../contexts/authContext";
 export function useProtectedRoute() {
   const auth = useAuth();
   const user = auth?.user ?? null;
-  const loading = (auth as any)?.loading ?? false;
+  const loading = auth?.loading ?? true;
   const segments = useSegments();
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
 
   useEffect(() => {
     if (loading) return; // Don't redirect until we know the auth state
+
+    // If the navigation tree isn't ready, we can't navigate yet.
+    if (!rootNavigationState?.key) return;
 
     const inAuthGroup = segments[0] === "auth";
 
@@ -29,5 +33,5 @@ export function useProtectedRoute() {
       // Redirect to the app root (tabs)
       router.replace("/");
     }
-  }, [user, loading, segments, router]);
+  }, [user, loading, segments, router, rootNavigationState]);
 }
