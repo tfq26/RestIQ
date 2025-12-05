@@ -1,11 +1,9 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform } from 'react-native';
-import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
@@ -40,13 +38,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={24} name="chart.bar.fill" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="ask"
-        options={{
-          title: 'Ask',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="message.fill" color={color} />,
-        }}
-      />
+
       <Tabs.Screen
         name="profile"
         options={{

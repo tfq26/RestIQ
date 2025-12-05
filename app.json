@@ -9,8 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "extra": {
-      "EXPO_PUBLIC_SUPABASE_URL": "https://tstxpfamregczkxqhlzv.supabase.co",
-      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRzdHhwZmFtcmVnY3preHFobHp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1MDc0NDIsImV4cCI6MjA3NzA4MzQ0Mn0.A7Qxa2uOTjk62U5n9go5g169Y65OzK-wrXtt-zdJekQ",
+      "EXPO_PUBLIC_SUPABASE_URL": "https://YOUR_PROJECT_ID.supabase.co",
+      "EXPO_PUBLIC_SUPABASE_ANON_KEY": "YOUR_SUPABASE_ANON_KEY",
       "EXPO_PUBLIC_BACKEND_URL": "http://192.168.5.127:5000",
       "EXPO_PUBLIC_ENV": "development"
     },
@@ -44,7 +44,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,

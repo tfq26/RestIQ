@@ -1,23 +1,26 @@
+import { useAuth } from "@/contexts/authContext";
+import { createURL } from "expo-linking";
+import { Link } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { useState } from "react";
 import {
-  View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView
+  View
 } from "react-native";
-import { supabase } from "../../lib/supabase";
-import { Link } from "expo-router";
-import * as WebBrowser from "expo-web-browser";
-import { createURL } from "expo-linking";
 import Toast from 'react-native-toast-message';
+import { supabase } from "../../lib/supabase";
 
 WebBrowser.maybeCompleteAuthSession(); // Required for web browser redirect
 
 export default function SignInScreen() {
+  const { loginAsGuest } = useAuth()!;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -80,6 +83,22 @@ export default function SignInScreen() {
     }
   };
 
+  const handleDemoLogin = async (testMode: boolean) => {
+    try {
+      // Reset backend sleep score to 50 for demo
+      try {
+        await fetch('http://192.168.5.146:8000/reset-score', { method: 'POST' });
+      } catch (e) {
+        console.log("Backend not reachable, skipping score reset");
+      }
+
+      await loginAsGuest(testMode);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to enter demo mode");
+    }
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -128,6 +147,20 @@ export default function SignInScreen() {
             onPress={handleGoogleSignIn}
           >
             <Text style={[styles.buttonText, styles.googleButtonText]}>Sign in with Google</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.demoButton]}
+            onPress={() => handleDemoLogin(false)}
+          >
+            <Text style={[styles.buttonText, styles.demoButtonText]}>Demo Mode</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.button, styles.demoButton, { marginTop: 12, backgroundColor: 'rgba(255,255,255,0.1)' }]}
+            onPress={() => handleDemoLogin(true)}
+          >
+            <Text style={[styles.buttonText, styles.demoButtonText, { color: '#9BA9CE' }]}>Test Mode</Text>
           </TouchableOpacity>
 
           <View style={styles.footer}>
@@ -220,6 +253,15 @@ const styles = StyleSheet.create({
   },
   googleButtonText: {
     color: "#333",
+  },
+  demoButton: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.2)",
+  },
+  demoButtonText: {
+    color: "#E0E6F5",
   },
   dividerContainer: {
     flexDirection: "row",

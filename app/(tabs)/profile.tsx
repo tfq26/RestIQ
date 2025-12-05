@@ -1,15 +1,17 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { supabase } from '../../lib/supabase';
-import { useRouter } from 'expo-router';
-import { useAuth } from '@/contexts/authContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/authContext';
+import { useSleepMode } from '@/contexts/SleepModeContext';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import { supabase } from '../../lib/supabase';
 
 export default function ProfileScreen() {
     const router = useRouter();
     const { user } = useAuth() || {};
+    const { toggleSleepMode } = useSleepMode();
     const [name, setName] = useState('');
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -18,7 +20,9 @@ export default function ProfileScreen() {
         if (user) {
             // Get name from metadata (social login or custom set)
             const metadataName = user.user_metadata?.full_name || user.user_metadata?.name || '';
-            setName(metadataName);
+            setName(metadataName || 'Dillon Ngyuen');
+        } else {
+            setName('Dillon Ngyuen');
         }
     }, [user]);
 
@@ -106,8 +110,32 @@ export default function ProfileScreen() {
                 </View>
 
                 <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Sleep Goals & History</Text>
+                    <View style={styles.goalsContainer}>
+                        <TouchableOpacity
+                            style={styles.goalButton}
+                            onPress={() => router.push('/sleep-goals')}
+                        >
+                            <IconSymbol name="moon.stars.fill" size={24} color="#3b82f6" />
+                            <Text style={styles.goalButtonText}>Set Goals</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.goalButton}
+                            onPress={() => router.push('/events-history')}
+                        >
+                            <IconSymbol name="clock.fill" size={24} color="#fbbf24" />
+                            <Text style={styles.goalButtonText}>Events</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Settings</Text>
-                    <TouchableOpacity style={styles.menuItem}>
+                    <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={() => router.push('/notifications-settings')}
+                    >
                         <Text style={styles.menuItemText}>Notifications</Text>
                         <IconSymbol name="chevron.right" size={20} color="#9BA9CE" />
                     </TouchableOpacity>
@@ -118,9 +146,16 @@ export default function ProfileScreen() {
                         <Text style={styles.menuItemText}>Health Profile</Text>
                         <IconSymbol name="chevron.right" size={20} color="#9BA9CE" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.menuItem}>
+                    <TouchableOpacity
+                        style={styles.menuItem}
+                        onPress={() => router.push('/connected-devices')}
+                    >
                         <Text style={styles.menuItemText}>Connected Devices</Text>
                         <IconSymbol name="chevron.right" size={20} color="#9BA9CE" />
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.menuItem} onPress={toggleSleepMode}>
+                        <Text style={styles.menuItemText}>Sleep Mode</Text>
+                        <IconSymbol name="moon.fill" size={20} color="#9BA9CE" />
                     </TouchableOpacity>
                 </View>
 
@@ -244,5 +279,23 @@ const styles = StyleSheet.create({
         color: '#ff6b6b',
         fontWeight: 'bold',
         fontSize: 16,
+    },
+    goalsContainer: {
+        flexDirection: 'row',
+        gap: 16,
+        marginBottom: 8,
+    },
+    goalButton: {
+        flex: 1,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        padding: 16,
+        borderRadius: 16,
+        alignItems: 'center',
+        gap: 8,
+    },
+    goalButtonText: {
+        color: '#E0E6F5',
+        fontSize: 14,
+        fontWeight: '600',
     },
 });

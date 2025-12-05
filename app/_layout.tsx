@@ -1,12 +1,15 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { Slot, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import Toast from 'react-native-toast-message';
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
+import SleepMode from "../components/SleepMode";
 import { AuthProvider } from "../contexts/authContext";
-import { useProtectedRoute } from "@/hooks/useProtectedRoute"
+import { SleepModeProvider } from "../contexts/SleepModeContext";
+;
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -38,8 +41,11 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <AuthNavigationGate colorScheme={colorScheme} />
-      <Toast />
+      <SleepModeProvider>
+        <AuthNavigationGate colorScheme={colorScheme} />
+        <SleepMode />
+        <Toast />
+      </SleepModeProvider>
     </AuthProvider>
   );
 }

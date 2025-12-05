@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '@/contexts/authContext';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useAuth } from '@/contexts/authContext';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import { supabase } from '../../lib/supabase';
 
 export default function HealthDataScreen() {
     const router = useRouter();
@@ -13,12 +13,12 @@ export default function HealthDataScreen() {
     const [loading, setLoading] = useState(false);
 
     const [formData, setFormData] = useState({
-        height: '',
-        weight: '',
-        age: '',
-        sleepGoal: '',
-        healthConditions: '',
-        medications: '',
+        height: '178',
+        weight: '75',
+        age: '24',
+        sleepGoal: '8',
+        healthConditions: 'None',
+        medications: 'None',
     });
 
     useEffect(() => {
